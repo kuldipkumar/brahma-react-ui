@@ -6,6 +6,7 @@ import Header from './components/Header'
 import ChatArea from './components/ChatArea';
 import MessageInput from './components/MessageInput';
 import Theme from './theme'
+import axios from 'axios';
 
 function App() {
   const [messages, setMessages] = useState([]);
@@ -18,15 +19,26 @@ function App() {
     contextConnection: false,
   });
 
+  let finalData = '';
+
+  const fetchData = async (messages) => {
+    const serverReply =  await axios ('https://667c2acd3c30891b865b9b12.mockapi.io/randomstring/TestData/1')
+
+    finalData = serverReply.data.Lifeisgood
+    console.log(finalData)
+
+    return finalData
+   }
+
   const handleSendMessage = (message) => {
-    setMessages([...messages, { text: message, sender: 'user' }]);
-    // Mock AI response
-    setTimeout(() => {
-      setMessages(prevMessages => [...prevMessages, { 
-        text: "This is a mock AI response. In a real application, this would come from your backend API.", 
-        sender: 'ai' 
-      }]);
-    }, 1000);
+    setMessages(  (message) => [...messages, { text: message, sender: 'user' }]);
+
+    console.log(messages)
+
+    const response = fetchData(messages)
+  console.log(finalData);
+    setMessages([...messages, {text: response, sender: 'ai'  }])
+    console.log(messages);
   };
 
   return (
