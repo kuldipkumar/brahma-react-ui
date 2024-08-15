@@ -1,16 +1,29 @@
-FROM node:16.16.0-buster AS build
-WORKDIR /build
+# Use an official Node runtime as the base image
+FROM node:14 as build
 
-COPY package.json package.json
-COPY package-lock.json package-lock.json
-RUN npm ci
+# Set the working directory in the container
+WORKDIR /app
 
-COPY public/ public
-COPY src/ src
+# Copy package.json and package-lock.json
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy the rest of the application code
+COPY . .
+
+# Build the app
 RUN npm run build
 
-FROM httpd:alpine
-WORKDIR /usr/local/apache2/htdocs
-COPY --from=build /build/build/ .
-RUN chown -R www-data:www-data /usr/local/apache2/htdocs \
-    && sed -i "s/Listen 80/Listen \${PORT}/g" /usr/local/apache2/conf/httpd.conf
+# Use Apache as the production server
+FROM httpd:2.4
+
+# Copy the build output to replace the default Apache contents
+COPY --from=build /app/build/ /usr/local/apache2/htdocs/
+
+# Copy custom Apache configuration if needed
+# COPY ./my-httpd.conf /usr/local/apache2/conf/httpd.conf
+
+# Expose port 80
+EXPOSE 80
